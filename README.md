@@ -25,13 +25,13 @@ A command-line tool that provides automated code reviews for your pull requests 
 ## Installation
 
 ```bash
-npm install -g @rolaabuhasna/local-reviewer
+npm install -g @rolaabuhasna/diff-reviewer
 ```
 
 ## Usage
 
 ```bash
-local-pr-reviewer review
+diff-reviewer review
 ```
 
 
