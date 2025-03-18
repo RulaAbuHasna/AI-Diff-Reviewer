@@ -1,0 +1,25 @@
+{
+  "name": "pr-reviewer",
+  "version": "1.0.0",
+  "description": "A CLI tool for automated PR reviews",
+  "type": "module",
+  "main": "src/index.js",
+  "bin": {
+    "pr-reviewer": "./src/cli.js"
+  },
+  "scripts": {
+    "start": "node src/cli.js",
+    "lint": "eslint src/",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "commander": "^11.1.0",
+    "eslint": "^8.56.0",
+    "prettier": "^3.1.1",
+    "simple-git": "^3.22.0"
+  },
+  "devDependencies": {
+    "vitest": "^1.1.0"
+  }
+}
