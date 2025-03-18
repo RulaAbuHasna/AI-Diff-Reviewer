@@ -2,18 +2,21 @@ import simpleGit from 'simple-git';
 import chalk from 'chalk';
 import { ESLint } from 'eslint';
 import { analyzeCode } from './analyzers/code-analyzer.js';
+import { analyzeDiffWithLLM } from './analyzers/llm-analyzer.js';
 import { generateReport } from './utils/report-generator.js';
 
 const git = simpleGit();
 
 export async function reviewLatestCommit({ verbose = false }) {
   try {
+    // Check if we're in a git repository with commits
     const hasCommits = await git.raw(['rev-parse', 'HEAD']).catch(() => false);
 
     if (!hasCommits) {
       return chalk.yellow('No Git history found. Please make at least one commit before running the review.');
     }
 
+    // Get the latest commit diff
     const diff = await git.diff(['HEAD~1', 'HEAD']);
 
     if (!diff) {
@@ -36,11 +39,21 @@ export async function reviewLatestCommit({ verbose = false }) {
       }
     });
 
-    // Analyze the changes
-    const analysis = await analyzeCode(diff, eslint);
+    // Run both static and LLM analysis in parallel
+    const [staticAnalysis, llmAnalysis] = await Promise.all([
+      analyzeCode(diff, eslint),
+      analyzeDiffWithLLM(diff)
+    ]);
 
-    // Generate the review report
-    return generateReport(analysis);
+    // Merge LLM suggestions into the analysis
+    if (llmAnalysis.suggestions.length > 0) {
+      staticAnalysis.llmSuggestions = llmAnalysis.suggestions;
+    }
+    if (llmAnalysis.error) {
+      staticAnalysis.llmError = llmAnalysis.error;
+    }
+
+    return generateReport(staticAnalysis);
   } catch (error) {
     return chalk.red(`Error: ${error.message}`);
   }

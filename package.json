@@ -17,7 +17,8 @@
     "commander": "^11.1.0",
     "eslint": "^8.56.0",
     "prettier": "^3.1.1",
-    "simple-git": "^3.22.0"
+    "simple-git": "^3.22.0",
+    "ollama": "^0.4.4"
   },
   "devDependencies": {
     "vitest": "^1.1.0"
