@@ -1,12 +1,28 @@
 {
-  "name": "pr-reviewer",
+  "name": "@rolaabuhasna/diff-reviewer",
   "version": "1.0.0",
-  "description": "A CLI tool for automated PR reviews",
+  "description": "A CLI tool for automated PR reviews using AI and static analysis",
   "type": "module",
   "main": "src/index.js",
   "bin": {
-    "pr-reviewer": "./src/cli.js"
+    "diff-reviewer": "./src/cli.js"
   },
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "code-review",
+    "ai",
+    "static-analysis",
+    "cli",
+    "git",
+    "eslint",
+    "ollama"
+  ],
+  "author": "Rola Abuhasna",
+  "license": "MIT",
   "scripts": {
     "start": "node src/cli.js review --verbose",
     "lint": "eslint src/",

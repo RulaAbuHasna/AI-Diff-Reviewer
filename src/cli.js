@@ -7,7 +7,7 @@ import { reviewLatestCommit } from './reviewer.js';
 const program = new Command();
 
 program
-  .name('pr-reviewer')
+  .name('diff-reviewer')
   .description('CLI tool for automated PR reviews')
   .version('1.0.0');
 
