@@ -1,4 +1,4 @@
-# PR Reviewer
+# Diff Reviewer
 
 A command-line tool that provides automated code reviews for your pull requests using both static analysis and AI-powered feedback.
 
