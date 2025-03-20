@@ -1,6 +1,6 @@
 # Diff Reviewer
 
-A command-line tool that provides automated code reviews for your pull requests using both static analysis and AI-powered feedback.
+A command-line tool that provides automated code reviews for your git diff changes using both static analysis and AI-powered feedback.
 
 ## Features
 
@@ -20,7 +20,7 @@ A command-line tool that provides automated code reviews for your pull requests 
 
 - Node.js 16 or higher
 - Git installed and configured
-- Ollama installed with the CodeLlama model
+- Ollama installed with the CodeLlama model (https://ollama.com/blog/run-code-llama-locally)
 
 ## Installation
 
@@ -49,6 +49,10 @@ diff-reviewer review --type working
   - `working`: Review current changes in working directory
 - `--no-llm`: Disable AI-powered review
 - `--no-static`: Disable static code analysis
+
+## Repository
+
+Check out the source code on GitHub: [AI-Diff-Reviewer](https://github.com/RulaAbuHasna/AI-Diff-Reviewer)
 
 ## Contributing
 
