@@ -43,7 +43,7 @@ export async function analyzeCode(diff, eslint) {
         });
       }
     } catch (error) {
-      console.error(`Error analyzing file ${file.path}:`, error);
+      log(`Error analyzing file ${file.path}: ${error.message}`, 'error');
       // Continue with other files even if one fails
     }
   }

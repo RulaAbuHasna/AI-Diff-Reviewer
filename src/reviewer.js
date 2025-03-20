@@ -1,94 +1,93 @@
-import simpleGit from 'simple-git';
-import chalk from 'chalk';
-import { ESLint } from 'eslint';
+import { execSync } from 'child_process';
 import { analyzeCode } from './analyzers/code-analyzer.js';
-import { analyzeDiffWithLLM } from './analyzers/llm-analyzer.js';
 import { generateReport } from './utils/report-generator.js';
+import { analyzeDiffWithLLM } from './analyzers/llm-analyzer.js';
+import { checkOllama } from './utils/ollama.js';
+import { eslint } from './utils/constants.js';
 import { log } from './utils/logger.js';
 
-const git = simpleGit();
+export async function reviewChanges(options = {}) {
+  const {
+    useLLM = true,
+    useStaticAnalysis = true,
+    reviewType = 'diff'
+  } = options;
 
-export async function reviewLatestCommit(options = {}) {
+  log('Starting code review...', 'start');
+
+  if (!useLLM && !useStaticAnalysis) {
+    log('No review type selected. Please select at least one review type.', 'error');
+    return;
+  }
+
   try {
-    log('Starting review...', 'start');
+    const diff = reviewType === 'diff'
+      ? getLatestCommitDiff()
+      : getWorkingDirectoryChanges();
 
-    // Check if we're in a git repository with commits
-    const hasCommits = await git.raw(['rev-parse', 'HEAD']).catch(() => false);
-
-    if (!hasCommits) {
-      return chalk.yellow('No Git history found. Please make at least one commit before running the review.');
-    }
-
-    // Get the latest commit diff
-    const diff = await git.diff(['HEAD~1', 'HEAD']);
 
     if (!diff) {
-      log('No changes found in the latest commit.', 'warning');
+      log('No changes to review.', 'warning');
       return;
     }
 
-    // Initialize ESLint
-    const eslint = new ESLint({
-      useEslintrc: false,
-      overrideConfig: {
-        extends: ['eslint:recommended'],
-        parserOptions: {
-          ecmaVersion: 2022,
-          sourceType: 'module'
-        },
-        env: {
-          node: true,
-          es6: true,
-          es2022: true
-        },
-        rules: {
-          'no-unused-vars': 'warn',
-          'no-undef': 'error',
-          'no-console': 'warn'
-        }
+    let analysis = {};
+
+    if (useStaticAnalysis) {
+      log('Running static analysis...');
+      try {
+        analysis = await analyzeCode(diff, eslint);
+        log('Static analysis completed successfully.', 'success');
+      } catch (error) {
+        log('Error during static analysis:', 'error');
       }
-    });
-
-    log('Running static analysis...', 'info');
-    const staticAnalysisPromise = analyzeCode(diff, eslint)
-      .then(result => {
-        log('Static analysis completed successfully', 'success');
-        return result;
-      })
-      .catch(error => {
-        log(`Static analysis failed: ${error.message}`, 'error');
-        throw error;
-      });
-
-    log('Running AI review...', 'info');
-    const llmAnalysisPromise = analyzeDiffWithLLM(diff)
-      .then(result => {
-        log('AI review complete', 'success');
-        return result;
-      })
-      .catch(error => {
-        log(`AI review issue: ${error.message}`, 'warning');
-        return { suggestions: [], error: error.message };
-      });
-
-    const [staticAnalysis, llmAnalysis] = await Promise.all([
-      staticAnalysisPromise,
-      llmAnalysisPromise
-    ]);
-
-    if (llmAnalysis.suggestions?.length > 0) {
-      staticAnalysis.llmSuggestions = llmAnalysis.suggestions;
-    }
-    if (llmAnalysis.error) {
-      staticAnalysis.llmError = llmAnalysis.error;
+    } else {
+      log('Static analysis disabled.', 'warning');
     }
 
-    const report = generateReport(staticAnalysis);
-    log('Review complete', 'success');
+    if (useLLM) {
+      log('Running LLM analysis...');
+      const ollamaReady = await checkOllama();
+      if (ollamaReady) {
+        try {
+          const llmAnalysis = await analyzeDiffWithLLM(diff);
+          analysis.llmSuggestions = llmAnalysis.suggestions;
+          log('LLM analysis completed successfully.', 'success');
+        } catch (error) {
+          log('Error during LLM analysis:', 'error');
+        }
+      } else {
+        log('Ollama or CodeLlama model not available. AI review disabled.', 'error');
+      }
+    }
 
-    return report;
+    const report = generateReport(analysis);
+    log(report);
+
+    return analysis;
   } catch (error) {
-    log(`Review failed: ${error.message}`, 'error');
-    return chalk.red(`Error: ${error.message}`);
+    log(`Error during code review: ${error.message}`, 'error');
+    throw error;
+  }
+}
+
+function getLatestCommitDiff() {
+  try {
+    return execSync('git diff HEAD~1 HEAD', { encoding: 'utf-8' });
+  } catch (error) {
+    log(`Error getting latest commit diff: ${error.message}`, 'error');
+    return null;
+  }
+}
+
+function getWorkingDirectoryChanges() {
+  try {
+    const stagedChanges = execSync('git diff --cached', { encoding: 'utf-8' });
+    const unstagedChanges = execSync('git diff', { encoding: 'utf-8' });
+
+    return stagedChanges + unstagedChanges;
+  } catch (error) {
+    log(`Error getting working directory changes: ${error.message}`, 'error');
+    return null;
   }
 }

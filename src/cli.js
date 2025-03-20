@@ -1,41 +1,29 @@
 #!/usr/bin/env node
 
-import { Command } from 'commander';
-import { reviewLatestCommit } from './reviewer.js';
-import { checkOllama } from './utils/ollama.js';
-import { log } from './utils/logger.js';
-
-const program = new Command();
+import { program } from 'commander';
+import { reviewChanges } from './reviewer.js';
 
 program
   .name('diff-reviewer')
-  .description('CLI tool for automated PR reviews')
+  .description('AI-powered code review assistant')
   .version('1.0.0');
 
 program
   .command('review')
-  .description('Review the latest commit')
-  .option('-v, --verbose', 'Show detailed output')
+  .description('Review code changes')
+  .option('-t, --type <type>', 'Review type: diff (latest commit) or working (current changes)', 'diff')
+  .option('--no-llm', 'Disable AI-powered review')
   .action(async (options) => {
-    log('Starting code review...', 'start');
-
-    const ollamaReady = await checkOllama();
-
-    if (!ollamaReady) {
-      log('Proceeding with limited functionality...', 'warning');
-    } else {
-      log('AI-powered review enabled!', 'success');
-    }
-
     try {
-      log('Analyzing latest commit...', 'info');
-      const review = await reviewLatestCommit(options);
-      log('Review completed!', 'success');
-      console.log(review);
+      await reviewChanges({
+        useLLM: options.llm,
+        useStaticAnalysis: options.staticAnalysis,
+        reviewType: options.type
+      });
     } catch (error) {
-      log(error.message, 'error');
+      log(`Error: ${error.message}`, 'error');
       process.exit(1);
     }
   });
 
-program.parse(process.argv);
+program.parse();
