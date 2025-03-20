@@ -1,59 +1,56 @@
 import chalk from 'chalk';
 
 export function generateReport(analysis) {
-  const report = [];
+  let report = chalk.cyan('\n📊 Code Review Report\n');
 
-  // Add header
-  report.push(chalk.cyan('\n📊 Code Review Report\n'));
-
-  // Static Analysis Section
+  // Linting Issues Section
   if (analysis.lintingIssues?.length > 0) {
-    report.push(chalk.yellow('🔍 Linting Issues:'));
-    report.push(chalk.gray('─'.repeat(50)));
+    report += chalk.yellow('\n🔍 Linting Issues:') + '\n';
+    report += chalk.gray('─'.repeat(50)) + '\n';
 
-    analysis.lintingIssues.forEach(issue => {
-      report.push(chalk.white(`\nFile: ${chalk.cyan(issue.file)}`));
-      report.push(chalk.gray(`Line ${issue.line}: ${issue.message}`));
+    for (const issue of analysis.lintingIssues) {
+      report += chalk.white(`\nFile: ${chalk.cyan(issue.file)}\n`);
+      report += chalk.gray(`Line ${issue.line}: ${issue.message}\n`);
       if (issue.suggestion) {
-        report.push(chalk.green(`💡 Suggestion: ${issue.suggestion}`));
+        report += chalk.green(`💡 Suggestion: ${issue.suggestion}\n`);
       }
-    });
+    }
   }
 
   // Suggestions Section
   if (analysis.suggestions?.length > 0) {
-    report.push(chalk.yellow('\n💡 Suggestions:'));
-    report.push(chalk.gray('─'.repeat(50)));
+    report += chalk.yellow('\n💡 Suggestions:') + '\n';
+    report += chalk.gray('─'.repeat(50)) + '\n';
 
-    analysis.suggestions.forEach(suggestion => {
-      report.push(chalk.white(`\n• ${suggestion}`));
-    });
+    for (const suggestion of analysis.suggestions) {
+      report += chalk.white(`\n• ${suggestion}\n`);
+    }
   }
 
   // Security Concerns Section
   if (analysis.securityConcerns?.length > 0) {
-    report.push(chalk.yellow('\n🔒 Security Concerns:'));
-    report.push(chalk.gray('─'.repeat(50)));
+    report += chalk.yellow('\n🔒 Security Concerns:') + '\n';
+    report += chalk.gray('─'.repeat(50)) + '\n';
 
-    analysis.securityConcerns.forEach(concern => {
-      report.push(chalk.white(`\n• ${concern}`));
-    });
+    for (const concern of analysis.securityConcerns) {
+      report += chalk.white(`\n• ${concern}\n`);
+    }
   }
 
   // AI Suggestions Section
   if (analysis.llmSuggestions?.length > 0) {
-    report.push(chalk.yellow('\n🤖 AI-Powered Suggestions:'));
-    report.push(chalk.gray('─'.repeat(50)));
+    report += chalk.yellow('\n🤖 AI-Powered Suggestions:') + '\n';
+    report += chalk.gray('─'.repeat(50)) + '\n';
 
-    const cleanSuggestions = analysis.llmSuggestions
-      .map(suggestion => suggestion.replace(/─+/g, '').trim())
-      .filter(suggestion => suggestion.length > 0);
-
-    cleanSuggestions.forEach(suggestion => {
-      report.push(chalk.white(`\n• ${suggestion}`));
-    });
+    for (const suggestion of analysis.llmSuggestions) {
+      const cleanSuggestion = suggestion.replace(/─+/g, '').trim();
+      if (cleanSuggestion) {
+        report += chalk.white(`\n• ${cleanSuggestion}\n`);
+      }
+    }
   }
-  report.push(chalk.cyan('\nReview completed successfully! 🎉\n'));
 
-  return report.join('\n');
+  report += chalk.cyan('\nReview completed successfully! 🎉\n');
+
+  return report;
 }
