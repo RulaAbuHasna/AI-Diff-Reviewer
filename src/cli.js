@@ -1,30 +1,30 @@
 #!/usr/bin/env node
 
-import { Command } from 'commander';
-import chalk from 'chalk';
-import { reviewLatestCommit } from './reviewer.js';
-
-const program = new Command();
+import { program } from 'commander';
+import { reviewChanges } from './reviewer.js';
 
 program
   .name('diff-reviewer')
-  .description('CLI tool for automated PR reviews')
+  .description('AI-powered code review assistant')
   .version('1.0.0');
 
 program
   .command('review')
-  .description('Review the latest commit')
-  .option('-v, --verbose', 'Show detailed output')
+  .description('Review code changes')
+  .option('-t, --type <type>', 'Review type: diff (latest commit) or working (current changes)', 'diff')
+  .option('--no-llm', 'Disable AI-powered review')
+  .option('--no-static-analysis', 'Disable static analysis')
   .action(async (options) => {
     try {
-      console.log(chalk.blue('🔍 Analyzing latest commit...'));
-      const review = await reviewLatestCommit(options);
-      console.log(chalk.green('\n✅ Review completed!\n'));
-      console.log(review);
+      await reviewChanges({
+        useLLM: options.llm,
+        useStaticAnalysis: options.staticAnalysis,
+        reviewType: options.type
+      });
     } catch (error) {
-      console.error(chalk.red('❌ Error:'), error.message);
+      log(`Error: ${error.message}`, 'error');
       process.exit(1);
     }
   });
 
-program.parse(process.argv);
+program.parse();

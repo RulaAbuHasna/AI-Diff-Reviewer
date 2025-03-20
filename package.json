@@ -24,7 +24,8 @@
   "author": "Rola Abuhasna",
   "license": "MIT",
   "scripts": {
-    "start": "node src/cli.js review --verbose",
+    "start-diff": "node src/cli.js review --type diff",
+    "start-working": "node src/cli.js review --type working",
     "lint": "eslint src/",
     "test": "vitest"
   },

@@ -12,28 +12,39 @@ export async function analyzeCode(diff, eslint) {
     // Skip binary files and minified code
     if (shouldSkipFile(file)) continue;
 
-    // Run ESLint
-    const lintResults = await eslint.lintText(file.content, {
-      filePath: file.path
-    });
+    try {
+      // Run ESLint
+      const lintResults = await eslint.lintText(file.content, {
+        filePath: file.path
+      });
 
-    // Process lint results
-    for (const result of lintResults) {
-      if (result.messages.length > 0) {
-        analysis.lintingIssues.push({
+      // Process lint results
+      lintResults.forEach(result => {
+        if (result.messages.length > 0) {
+          const issues = result.messages.map(message => ({
+            line: file.lineNumbers[message.line - 1] || message.line,
+            message: message.message,
+            fix: message.fix
+          }));
+
+          analysis.lintingIssues.push({
+            file: file.path,
+            issues
+          });
+        }
+      });
+
+      // Add basic pattern checks
+      const patterns = checkCommonPatterns(file.content);
+      if (patterns.length > 0) {
+        analysis.suggestions.push({
           file: file.path,
-          issues: result.messages
+          patterns
         });
       }
-    }
-
-    // Add basic pattern checks
-    const patterns = checkCommonPatterns(file.content);
-    if (patterns.length > 0) {
-      analysis.suggestions.push({
-        file: file.path,
-        patterns
-      });
+    } catch (error) {
+      log(`Error analyzing file ${file.path}: ${error.message}`, 'error');
+      // Continue with other files even if one fails
     }
   }
 
@@ -41,9 +52,53 @@ export async function analyzeCode(diff, eslint) {
 }
 
 function parseDiff(diff) {
-  // Basic diff parsing - to be expanded
   const files = [];
-  // TODO: Implement proper diff parsing
+  const lines = diff.split('\n');
+  let currentFile = null;
+  let currentContent = '';
+  let currentLineNumber = 0;
+  let lineNumbers = [];
+
+  for (const line of lines) {
+    if (line.startsWith('diff --git')) {
+      // Save previous file if exists
+      if (currentFile) {
+        files.push({
+          path: currentFile,
+          content: currentContent,
+          lineNumbers: lineNumbers
+        });
+        currentContent = '';
+        lineNumbers = [];
+      }
+      // Extract file path from diff header
+      currentFile = line.split(' ')[2].replace('a/', '');
+    } else if (line.startsWith('@@')) {
+      // Parse the line number from the diff header
+      const match = line.match(/@@ -\d+,\d+ \+(\d+),\d+ @@/);
+      if (match) {
+        currentLineNumber = parseInt(match[1]);
+      }
+    } else if (line.startsWith('+') && !line.startsWith('+++')) {
+      // Only include added lines (starting with +)
+      currentContent += line.slice(1) + '\n';
+      lineNumbers.push(currentLineNumber);
+      currentLineNumber++;
+    } else if (!line.startsWith('-') && !line.startsWith('+++')) {
+      // For unchanged lines, just increment the line number
+      currentLineNumber++;
+    }
+  }
+
+  // Add the last file
+  if (currentFile) {
+    files.push({
+      path: currentFile,
+      content: currentContent,
+      lineNumbers: lineNumbers
+    });
+  }
+
   return files;
 }
 
@@ -60,7 +115,7 @@ function shouldSkipFile(file) {
 
 function checkCommonPatterns(content) {
   const patterns = [];
-  
+
   // Example patterns to check
   const checks = [
     {

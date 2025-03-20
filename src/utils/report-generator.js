@@ -1,63 +1,61 @@
 import chalk from 'chalk';
 
 export function generateReport(analysis) {
-  let report = '# PR Review Report\n\n';
+  let report = chalk.cyan('\n📊 Code Review Report\n');
 
-  if (analysis.lintingIssues.length === 0 &&
-    analysis.suggestions.length === 0 &&
-    analysis.securityConcerns.length === 0 &&
-    !analysis.llmSuggestions) {
-    return report + '✨ No issues found! Code looks good.\n';
-  }
+  // Linting Issues Section
+  if (analysis.lintingIssues?.length > 0) {
+    report += chalk.yellow('\n🔍 Linting Issues:') + '\n';
+    report += chalk.gray('─'.repeat(50)) + '\n';
 
-  // Linting Issues
-  if (analysis.lintingIssues.length > 0) {
-    report += '## Linting Issues\n\n';
-    for (const file of analysis.lintingIssues) {
-      report += `### ${file.path}\n\n`;
-      for (const issue of file.issues) {
-        report += `- 🔍 Line ${issue.line}: ${issue.message}\n`;
+    for (const fileIssue of analysis.lintingIssues) {
+      report += chalk.white(`\nFile: ${chalk.cyan(fileIssue.file)}\n`);
+      for (const issue of fileIssue.issues) {
+        report += chalk.gray(`Line ${issue.line}: ${issue.message}\n`);
         if (issue.fix) {
-          report += `  - 💡 Suggestion: ${issue.fix}\n`;
+          report += chalk.green(`💡 Suggestion: ${issue.fix}\n`);
         }
       }
-      report += '\n';
     }
   }
 
-  // Suggestions
-  if (analysis.suggestions.length > 0) {
-    report += '## Suggestions\n\n';
-    for (const file of analysis.suggestions) {
-      report += `### ${file.path}\n\n`;
-      for (const pattern of file.patterns) {
-        report += `- 💡 ${pattern}\n`;
+  // Suggestions Section
+  if (analysis.suggestions?.length > 0) {
+    report += chalk.yellow('\n💡 Suggestions:') + '\n';
+    report += chalk.gray('─'.repeat(50)) + '\n';
+
+    for (const fileSuggestion of analysis.suggestions) {
+      report += chalk.white(`\nFile: ${chalk.cyan(fileSuggestion.file)}\n`);
+      for (const pattern of fileSuggestion.patterns) {
+        report += chalk.white(`• ${pattern}\n`);
       }
-      report += '\n';
     }
   }
 
-  // LLM Analysis
-  if (analysis.llmSuggestions?.length > 0) {
-    report += '## AI-Powered Suggestions\n\n';
-    for (const suggestion of analysis.llmSuggestions) {
-      report += `- 🤖 ${suggestion}\n`;
-    }
-    report += '\n';
-  }
+  // Security Concerns Section
+  if (analysis.securityConcerns?.length > 0) {
+    report += chalk.yellow('\n🔒 Security Concerns:') + '\n';
+    report += chalk.gray('─'.repeat(50)) + '\n';
 
-  if (analysis.llmError) {
-    report += `## ⚠️ AI Analysis Error\n\n${analysis.llmError}\n\n`;
-  }
-
-  // Security Concerns
-  if (analysis.securityConcerns.length > 0) {
-    report += '## Security Concerns\n\n';
     for (const concern of analysis.securityConcerns) {
-      report += `- ⚠️ ${concern}\n`;
+      report += chalk.white(`\n• ${concern}\n`);
     }
-    report += '\n';
   }
+
+  // AI Suggestions Section
+  if (analysis.llmSuggestions?.length > 0) {
+    report += chalk.yellow('\n🤖 AI-Powered Suggestions:') + '\n';
+    report += chalk.gray('─'.repeat(50)) + '\n';
+
+    for (const suggestion of analysis.llmSuggestions) {
+      const cleanSuggestion = suggestion.replace(/─+/g, '').trim();
+      if (cleanSuggestion) {
+        report += chalk.white(`\n• ${cleanSuggestion}\n`);
+      }
+    }
+  }
+
+  report += chalk.cyan('\nReview completed successfully! 🎉\n');
 
   return report;
 }

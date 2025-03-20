@@ -4,7 +4,9 @@ A command-line tool that provides automated code reviews for your pull requests 
 
 ## Features
 
-- 🔍 Automated code analysis of your latest commit
+- 🔍 Automated code analysis of:
+  - Latest commit changes (`--type diff`)
+  - Current working directory changes (`--type working`)
 - 🤖 AI-powered code review using CodeLlama via Ollama
 - ✨ ESLint integration for static code analysis
 - 📊 Detailed review reports including:
@@ -20,8 +22,6 @@ A command-line tool that provides automated code reviews for your pull requests 
 - Git installed and configured
 - Ollama installed with the CodeLlama model
 
-
-
 ## Installation
 
 ```bash
@@ -30,10 +30,25 @@ npm install -g @rolaabuhasna/diff-reviewer
 
 ## Usage
 
+Review latest commit changes:
 ```bash
 diff-reviewer review
+# or explicitly
+diff-reviewer review --type diff
 ```
 
+Review current working directory changes (before committing):
+```bash
+diff-reviewer review --type working
+```
+
+### Options
+
+- `-t, --type <type>`: Choose what to review
+  - `diff`: Review latest commit (default)
+  - `working`: Review current changes in working directory
+- `--no-llm`: Disable AI-powered review
+- `--no-static`: Disable static code analysis
 
 ## Contributing
 

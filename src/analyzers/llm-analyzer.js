@@ -6,7 +6,7 @@ export async function analyzeDiffWithLLM(diff) {
             model: 'codellama',
             messages: [{
                 role: 'system',
-                content: 'You are a code review assistant. Analyze the following Git diff and provide specific, actionable feedback focusing on: code quality, potential bugs, security issues, and suggested improvements. Be concise and specific.'
+                content: 'You are a code review assistant. Analyze the following Git diff and provide specific, actionable feedback focusing on: code quality, potential bugs, security issues, and suggested improvements. Be concise and specific. Do not include generic messages like "This is the updated code" or "Here are the changes".'
             }, {
                 role: 'user',
                 content: diff
