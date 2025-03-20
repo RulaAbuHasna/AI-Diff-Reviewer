@@ -35,6 +35,16 @@ export async function reviewLatestCommit(options = {}) {
         parserOptions: {
           ecmaVersion: 2022,
           sourceType: 'module'
+        },
+        env: {
+          node: true,
+          es6: true,
+          es2022: true
+        },
+        rules: {
+          'no-unused-vars': 'warn',
+          'no-undef': 'error',
+          'no-console': 'warn'
         }
       }
     });
