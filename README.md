@@ -50,6 +50,10 @@ diff-reviewer review --type working
 - `--no-llm`: Disable AI-powered review
 - `--no-static`: Disable static code analysis
 
+## Repository
+
+Check out the source code on GitHub: [AI-Diff-Reviewer](https://github.com/RulaAbuHasna/AI-Diff-Reviewer)
+
 ## Contributing
 
 1. Fork the repository
