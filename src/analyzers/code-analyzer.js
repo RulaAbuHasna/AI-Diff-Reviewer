@@ -12,34 +12,39 @@ export async function analyzeCode(diff, eslint) {
     // Skip binary files and minified code
     if (shouldSkipFile(file)) continue;
 
-    // Run ESLint
-    const lintResults = await eslint.lintText(file.content, {
-      filePath: file.path
-    });
+    try {
+      // Run ESLint
+      const lintResults = await eslint.lintText(file.content, {
+        filePath: file.path
+      });
 
-    // Process lint results
-    for (const result of lintResults) {
-      if (result.messages.length > 0) {
-        const issues = result.messages.map(message => ({
-          line: file.lineNumbers[message.line - 1] || message.line,
-          message: message.message,
-          fix: message.fix
-        }));
+      // Process lint results
+      lintResults.forEach(result => {
+        if (result.messages.length > 0) {
+          const issues = result.messages.map(message => ({
+            line: file.lineNumbers[message.line - 1] || message.line,
+            message: message.message,
+            fix: message.fix
+          }));
 
-        analysis.lintingIssues.push({
+          analysis.lintingIssues.push({
+            file: file.path,
+            issues
+          });
+        }
+      });
+
+      // Add basic pattern checks
+      const patterns = checkCommonPatterns(file.content);
+      if (patterns.length > 0) {
+        analysis.suggestions.push({
           file: file.path,
-          issues
+          patterns
         });
       }
-    }
-
-    // Add basic pattern checks
-    const patterns = checkCommonPatterns(file.content);
-    if (patterns.length > 0) {
-      analysis.suggestions.push({
-        file: file.path,
-        patterns
-      });
+    } catch (error) {
+      console.error(`Error analyzing file ${file.path}:`, error);
+      // Continue with other files even if one fails
     }
   }
 
