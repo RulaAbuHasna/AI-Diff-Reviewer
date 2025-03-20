@@ -13,6 +13,7 @@ program
   .description('Review code changes')
   .option('-t, --type <type>', 'Review type: diff (latest commit) or working (current changes)', 'diff')
   .option('--no-llm', 'Disable AI-powered review')
+  .option('--no-static-analysis', 'Disable static analysis')
   .action(async (options) => {
     try {
       await reviewChanges({

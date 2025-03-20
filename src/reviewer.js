@@ -59,6 +59,8 @@ export async function reviewChanges(options = {}) {
       } else {
         log('Ollama or CodeLlama model not available. AI review disabled.', 'error');
       }
+    } else {
+      log('LLM analysis disabled.', 'warning');
     }
 
     const report = generateReport(analysis);
