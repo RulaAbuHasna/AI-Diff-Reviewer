@@ -8,11 +8,13 @@ export function generateReport(analysis) {
     report += chalk.yellow('\n🔍 Linting Issues:') + '\n';
     report += chalk.gray('─'.repeat(50)) + '\n';
 
-    for (const issue of analysis.lintingIssues) {
-      report += chalk.white(`\nFile: ${chalk.cyan(issue.file)}\n`);
-      report += chalk.gray(`Line ${issue.line}: ${issue.message}\n`);
-      if (issue.suggestion) {
-        report += chalk.green(`💡 Suggestion: ${issue.suggestion}\n`);
+    for (const fileIssue of analysis.lintingIssues) {
+      report += chalk.white(`\nFile: ${chalk.cyan(fileIssue.file)}\n`);
+      for (const issue of fileIssue.issues) {
+        report += chalk.gray(`Line ${issue.line}: ${issue.message}\n`);
+        if (issue.fix) {
+          report += chalk.green(`💡 Suggestion: ${issue.fix}\n`);
+        }
       }
     }
   }
@@ -22,8 +24,11 @@ export function generateReport(analysis) {
     report += chalk.yellow('\n💡 Suggestions:') + '\n';
     report += chalk.gray('─'.repeat(50)) + '\n';
 
-    for (const suggestion of analysis.suggestions) {
-      report += chalk.white(`\n• ${suggestion}\n`);
+    for (const fileSuggestion of analysis.suggestions) {
+      report += chalk.white(`\nFile: ${chalk.cyan(fileSuggestion.file)}\n`);
+      for (const pattern of fileSuggestion.patterns) {
+        report += chalk.white(`• ${pattern}\n`);
+      }
     }
   }
 

@@ -21,7 +21,6 @@ export async function reviewLatestCommit(options = {}) {
 
     // Get the latest commit diff
     const diff = await git.diff(['HEAD~1', 'HEAD']);
-    console.log({ diff });
 
     if (!diff) {
       log('No changes found in the latest commit.', 'warning');
