@@ -20,7 +20,7 @@ A command-line tool that provides automated code reviews for your git diff chang
 
 - Node.js 16 or higher
 - Git installed and configured
-- Ollama installed with the CodeLlama model
+- Ollama installed with the CodeLlama model (https://ollama.com/blog/run-code-llama-locally)
 
 ## Installation
 
