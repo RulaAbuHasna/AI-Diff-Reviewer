@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
-import chalk from 'chalk';
 import { reviewLatestCommit } from './reviewer.js';
+import { checkOllama } from './utils/ollama.js';
+import { log } from './utils/logger.js';
 
 const program = new Command();
 
@@ -16,13 +17,23 @@ program
   .description('Review the latest commit')
   .option('-v, --verbose', 'Show detailed output')
   .action(async (options) => {
+    log('Starting code review...', 'start');
+
+    const ollamaReady = await checkOllama();
+
+    if (!ollamaReady) {
+      log('Proceeding with limited functionality...', 'warning');
+    } else {
+      log('AI-powered review enabled!', 'success');
+    }
+
     try {
-      console.log(chalk.blue('🔍 Analyzing latest commit...'));
+      log('Analyzing latest commit...', 'info');
       const review = await reviewLatestCommit(options);
-      console.log(chalk.green('\n✅ Review completed!\n'));
+      log('Review completed!', 'success');
       console.log(review);
     } catch (error) {
-      console.error(chalk.red('❌ Error:'), error.message);
+      log(error.message, 'error');
       process.exit(1);
     }
   });
